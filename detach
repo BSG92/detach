@@ -1,0 +1,88 @@
+#!/bin/bash
+#AUTHOR : Buddika Gunawardena
+
+#Use this when you want to power off an external hard drive connected to USB 3.0
+
+#This script uses udisksctl. If you are not using udisksctl, replace this line with the tool you use to power off the drive
+#ex:- If you are using udisks, use:
+#   udisks --detach $BLKDEV
+#------------------------------------------------------------------------------------------------------------
+#Checking you are running the script as root
+if [ ! $UID -eq 0 ]; then
+    echo -e '\E[1m'"You need root privileges to run this script\033[0m"
+    exit 1
+else
+    echo #Exit from the if condition
+fi
+#-----------------------------------------------------------------------------------------------------------------------------------------------
+function dev {
+      read -p "> " BLKDEV
+    COMMAND=`fdisk -l | grep "$BLKDEV"`
+
+    if [ $? -eq 0 ]; then
+        echo -e '\E[37;44m'"You selected > $BLKDEV \033[0m "
+        echo "$COMMAND"
+        DF=`df -h | grep $BLKDEV`
+        if [ $? -eq 1 ]; then #if device partitions are already unmounted
+            echo -e '\E[32m'" Powering off drive $BLKDEV...\033[0m"
+            #using udisksctl to power off the drive
+            udisksctl power-off -b $BLKDEV
+            #Checking whether powering off is a success
+            if [ $? -eq 0 ]; then
+                clear
+                 printf "\n"
+                echo -e '\E[33m'" Please remove the device from the USB port \033[0m"
+                #Wait 1.2 seconds
+                sleep 1.2 #Sleep is necessary to wait until external hard drives (if any) are properly powered off before removing xhci_hcd module
+                for i in $DEP_CHECK
+                    do
+                        rmmod $i #Remove modules that depend on xhci_hcd
+                    done
+                    rmmod xhci_hcd #Remove the xhci_hcd module
+                    echo -e '\E[33m'" and press Enter \033[0m"
+                    read #Waiting until user presses Enter
+        
+                for i in $DEP_CHECK
+                    do
+                        modprobe $i #reinstall modules that depend on xhci_hcd
+                    done
+                    modprobe xhci_hcd # reinstall xhci_hcd module... Usually this module gets automatically installed upon installation of modules that depend on this
+                    #since we are using modprobe command
+            else
+                printf "\n"
+                echo -e '\E[31m'"Oops....! Something went wrong\033[0m"
+                exit 1
+            fi
+        else
+            echo ;#echoing a new line
+            echo -e '\E[5;31m'"Please unmount the following partitions\033[0m";echo -e '\E[37;41m'"$DF\033[0m"
+        fi
+    else
+      echo -e '\E[31m'"Block Device not found...\E[0m"
+      echo "Enter the device name again or hit <CTRL> + C to cancel"
+      dev
+    fi
+}
+#------------------------------------------------------------------------------------------------------------------------------
+function check_module {
+    MOD_CHECK=`lsmod | grep "xhci_hcd"`
+    if [ $? -eq 0 ]; then
+        #if xhci_hcd module is found
+        #get the modules that depend on xhci_hcd
+        DEP_CHECK=`lsmod | grep "xhci_hcd" | awk 'NR==1{print $NF;}' | cut -d"," -f1-7 | sed 's/,/\n/g'`
+        
+        echo -e '\E[33m'"Partitions should be unmounted first\033[0m"
+        echo -e "Enter Block Device to remove... Should have the format of \E[1m/dev/sdx\E[0m"
+        dev #Calling dev function   
+    else
+        echo -e '\E[31m'"Error : \033[0m"
+        printf "xhci_hcd Module not found\nThis script depends on xhci_module.\nExiting..."
+        exit 1; #exit with exit status 1
+    fi
+}
+check_module
+
+
+
+  
+
