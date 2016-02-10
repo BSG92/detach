@@ -1,6 +1,8 @@
 # detach
 Safely Remove USB 3.0 External HardDrives connected to USB 3.0 port in Linux PCs
 
+Use this ONLY to power down USB 3.0 Hard Disks
+
 Author : Buddika Gunawardena (BSG92)
 
 Prerequisites
@@ -18,3 +20,4 @@ Uninstallation
 
 Known Issues
 * Since xhci_hcd module and other modules that depend on it are unloaded to power down a device, the script cuts off every USB connection, even the built-in camera in notebooks, temporarily.
+* The led of the harddrive may not turn off, but the disk will stop spinning. So it is safe to remove the drive
