@@ -10,6 +10,9 @@ Prerequisites
 Installation
 * Make the "install.sh" script executable and run it. The program is set to be installed to /usr/sbin by default. Change it if required.
 
+Usage
+* Type detach in the terminal.
+
 Uninstallation
 * Use the uninstall.sh script to uninstall (delete) the "detach" script from /usr/sbin (default installation path). Change this if required.
 
