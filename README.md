@@ -1,5 +1,6 @@
 # detach
 Safely Remove USB 3.0 External HardDrives connected to USB 3.0 port in Linux PCs
+
 Author : Buddika Gunawardena (BSG92)
 
 Prerequisites
