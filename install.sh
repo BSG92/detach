@@ -12,7 +12,13 @@ else
         exit 0
     else
         install detach -t $LOCATION/
-        chmod u+x $LOCATION/$FILENAME
-        exit 0
+        #if install command is not found, try using cp
+        if [ $? -eq 127 ]; then
+                cp detach $LOCATION/
+                chmod u+x $LOCATION/$FILENAME
+        else
+                chmod u+x $LOCATION/$FILENAME
+                exit 0
+        fi
     fi
 fi
